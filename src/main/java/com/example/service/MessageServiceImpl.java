@@ -48,4 +48,5 @@ public class MessageServiceImpl implements MessageService {
         // Validation and business logic can be added here
         return messageRepository.save(message);
     }
+
 }

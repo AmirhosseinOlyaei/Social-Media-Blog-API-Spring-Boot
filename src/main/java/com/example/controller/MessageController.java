@@ -2,11 +2,15 @@ package com.example.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.entity.Message;
 import com.example.service.MessageService;
+
+import java.util.List;
+
 import com.example.repository.AccountRepository;
 
 @RestController
@@ -32,5 +36,14 @@ public class MessageController {
 
         Message createdMessage = messageService.createMessage(message);
         return ResponseEntity.ok(createdMessage);
+    }
+
+    @GetMapping("/messages")
+    public ResponseEntity<List<Message>> getAllMessages() {
+        List<Message> messages = messageService.getAllMessages();
+        if (messages.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(messages);
     }
 }
