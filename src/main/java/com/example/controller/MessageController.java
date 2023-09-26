@@ -3,6 +3,7 @@ package com.example.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,5 +46,14 @@ public class MessageController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(messages);
+    }
+
+    @GetMapping("/messages/{messageId}")
+    public ResponseEntity<Message> getMessageById(@PathVariable Integer messageId) {
+        Message message = messageService.getMessageById(messageId);
+        if (message == null) {
+            return ResponseEntity.ok().build(); // Return 200 OK with an empty body.
+        }
+        return ResponseEntity.ok(message);
     }
 }
