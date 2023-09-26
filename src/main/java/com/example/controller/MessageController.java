@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,6 +73,27 @@ public class MessageController {
         }
 
         return ResponseEntity.ok(messages);
+    }
+
+    @PatchMapping("/messages/{messageId}")
+    public ResponseEntity<?> updateMessage(@PathVariable Integer messageId, @RequestBody Message messageUpdate) {
+        try {
+            // Validate the message text
+            if (messageUpdate.getMessage_text().trim().isEmpty() || messageUpdate.getMessage_text().length() > 255) {
+                return ResponseEntity.badRequest().body("Message text is either empty or exceeds the allowable limit.");
+            }
+
+            Message updatedMessage = messageService.updateMessage(messageId, messageUpdate);
+
+            if (updatedMessage == null) {
+                return ResponseEntity.badRequest().body("Message with ID " + messageId + " not found.");
+            }
+
+            return ResponseEntity.ok(1); // Return 1 to indicate one row modified.
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }
