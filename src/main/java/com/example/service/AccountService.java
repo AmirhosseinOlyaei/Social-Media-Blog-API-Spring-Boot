@@ -14,4 +14,7 @@ public interface AccountService {
     Account updateAccount(Integer id, Account account);
 
     void deleteAccount(Integer id);
+
+    Account getAccountByUsername(String username);
+
 }
