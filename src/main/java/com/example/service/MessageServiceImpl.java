@@ -54,4 +54,9 @@ public class MessageServiceImpl implements MessageService {
         return messageRepository.deleteMessageById(messageId);
     }
 
+    @Override
+    public List<Message> getAllMessagesForUser(Integer userId) {
+        return messageRepository.findAllByPosted_by(userId);
+    }
+
 }

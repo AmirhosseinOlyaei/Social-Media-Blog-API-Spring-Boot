@@ -63,4 +63,15 @@ public class MessageController {
         int rowsDeleted = messageService.deleteMessageById(messageId);
         return ResponseEntity.ok(rowsDeleted);
     }
+
+    @GetMapping("/accounts/{accountId}/messages")
+    public ResponseEntity<List<Message>> getAllMessagesForUser(@PathVariable Integer accountId) {
+        List<Message> messages = messageService.getAllMessagesForUser(accountId);
+        if (messages.isEmpty()) {
+            return ResponseEntity.ok(messages);
+        }
+
+        return ResponseEntity.ok(messages);
+    }
+
 }

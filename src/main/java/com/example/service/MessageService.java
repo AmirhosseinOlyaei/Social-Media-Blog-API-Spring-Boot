@@ -19,4 +19,6 @@ public interface MessageService {
 
     int deleteMessageById(Integer messageId);
 
+    List<Message> getAllMessagesForUser(Integer userId);
+
 }
