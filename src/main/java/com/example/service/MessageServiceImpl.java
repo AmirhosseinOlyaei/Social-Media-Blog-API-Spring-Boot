@@ -49,4 +49,9 @@ public class MessageServiceImpl implements MessageService {
         return messageRepository.save(message);
     }
 
+    @Override
+    public int deleteMessageById(Integer messageId) {
+        return messageRepository.deleteMessageById(messageId);
+    }
+
 }

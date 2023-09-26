@@ -17,4 +17,6 @@ public interface MessageService {
 
     Message createMessage(Message message);
 
+    int deleteMessageById(Integer messageId);
+
 }
