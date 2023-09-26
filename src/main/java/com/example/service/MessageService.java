@@ -14,4 +14,7 @@ public interface MessageService {
     Message updateMessage(Integer id, Message message);
 
     void deleteMessage(Integer id);
+
+    Message createMessage(Message message);
+
 }

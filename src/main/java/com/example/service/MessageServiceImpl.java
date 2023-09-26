@@ -42,4 +42,10 @@ public class MessageServiceImpl implements MessageService {
     public void deleteMessage(Integer id) {
         messageRepository.deleteById(id);
     }
+
+    @Override
+    public Message createMessage(Message message) {
+        // Validation and business logic can be added here
+        return messageRepository.save(message);
+    }
 }
