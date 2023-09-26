@@ -25,4 +25,13 @@ public class UserController {
         return new ResponseEntity<>(savedAccount, HttpStatus.OK);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Account> loginUser(@RequestBody Account account) {
+        Account loggedInAccount = accountService.authenticate(account.getUsername(), account.getPassword());
+        if (loggedInAccount != null) {
+            return new ResponseEntity<>(loggedInAccount, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
 }

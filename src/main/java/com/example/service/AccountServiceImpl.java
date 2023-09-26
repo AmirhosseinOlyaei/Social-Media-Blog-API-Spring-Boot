@@ -47,4 +47,14 @@ public class AccountServiceImpl implements AccountService {
     public Account getAccountByUsername(String username) {
         return accountRepository.findByUsername(username);
     }
+
+    @Override
+    public Account authenticate(String username, String password) {
+        Account account = getAccountByUsername(username);
+        if (account != null && account.getPassword().equals(password)) {
+            return account;
+        }
+        return null;
+    }
+
 }

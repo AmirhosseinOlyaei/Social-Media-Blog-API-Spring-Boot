@@ -5,6 +5,7 @@ import com.example.entity.Account;
 import java.util.List;
 
 public interface AccountService {
+
     List<Account> getAllAccounts();
 
     Account getAccountById(Integer id);
@@ -16,5 +17,7 @@ public interface AccountService {
     void deleteAccount(Integer id);
 
     Account getAccountByUsername(String username);
+
+    Account authenticate(String username, String password);
 
 }
