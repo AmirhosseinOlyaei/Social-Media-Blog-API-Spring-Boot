@@ -1,106 +1,129 @@
-# Project: Spring Social media blog API
+# Social Media Blog API
 
-## Background 
+A RESTful backend for a micro-blogging platform built with Spring Boot. It manages
+user accounts and messages, exposing endpoints for registration, login, and full
+message CRUD.
 
-Full-stack applications are typically concerned with both a front end, that displays information to the user and takes in input, and a backend, that manages persisted information.
+## Tech Stack
 
-This project will be a backend for a hypothetical social media app, where we must manage our users’ accounts as well as any messages that they submit to the application. However, the functionality for this project will leverage a popular web application framework for Java known as Spring. The Spring framework allows for automatic injection and configuration of many features, including data persitence, endpoints and conventional data manipulation logic (CRUD operations).
+- **Java 25**
+- **Spring Boot 4.1.1** (Spring MVC, Spring Data JPA, Hibernate 7)
+- **H2** in-memory database (2.4.x)
+- **Maven 3.10+**
+- JUnit 5 integration tests (raw HTTP client, no mocks)
 
-In our hypothetical micro-blogging or messaging app, any user should be able to see all of the messages posted to the site, or they can see the messages posted by a particular user. In either case, we require a backend which is able to deliver the data needed to display this information as well as process actions like logins, registrations, message creations, message updates, and message deletions.
+## Getting Started
 
-## Database Tables 
+### Prerequisites
 
-The following tables will be initialized in your project's built-in database upon startup using the configuration details in the application.properties file and the provided SQL script.
+- JDK 25 (JDK 17+ minimum)
+- Maven 3.6.3+
 
-### Account
+### Build
+
+```bash
+mvn clean install
 ```
+
+### Run
+
+```bash
+mvn spring-boot:run
+```
+
+The API starts on `http://localhost:8080`. The database is seeded from
+`src/main/resources/data.sql` on every boot and resets on restart.
+
+### Test
+
+```bash
+mvn test
+```
+
+The suite starts the full application on port 8080 per test class, so stop any
+running instance first.
+
+## API Reference
+
+| Method | Endpoint                  | Description            | Success                               | Error                                     |
+| ------ | ------------------------- | ---------------------- | ------------------------------------- | ----------------------------------------- |
+| POST   | `/register`               | Register an account    | 200 + account JSON                    | 400 invalid input, 409 duplicate username |
+| POST   | `/login`                  | Verify credentials     | 200 + account JSON                    | 401 unauthorized                          |
+| POST   | `/messages`               | Create a message       | 200 + message JSON                    | 400 invalid input                         |
+| GET    | `/messages`               | List all messages      | 200 + JSON array (may be empty)       | -                                         |
+| GET    | `/messages/{id}`          | Get a message by ID    | 200 + message JSON (empty if missing) | -                                         |
+| PATCH  | `/messages/{id}`          | Update message text    | 200 + rows updated (`1`)              | 400 invalid input                         |
+| DELETE | `/messages/{id}`          | Delete a message       | 200 + `1` if deleted, empty otherwise | -                                         |
+| GET    | `/accounts/{id}/messages` | List a user's messages | 200 + JSON array (may be empty)       | -                                         |
+
+### Validation Rules
+
+- **Registration:** username must not be blank, password must be at least 4
+  characters, username must be unique.
+- **Message creation:** `message_text` must not be blank and must be 255
+  characters or fewer; `posted_by` must reference an existing account.
+- **Message update:** the message must exist; new `message_text` must not be
+  blank and must be 255 characters or fewer.
+
+### Examples
+
+```bash
+# Register
+curl -X POST localhost:8080/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "password": "pass1234"}'
+
+# Create a message
+curl -X POST localhost:8080/messages \
+  -H "Content-Type: application/json" \
+  -d '{"posted_by": 9999, "message_text": "hello world", "time_posted_epoch": 1728946800}'
+
+# List all messages
+curl localhost:8080/messages
+```
+
+## Database Schema
+
+Seeded automatically at startup (in-memory H2).
+
+**Account**
+
+```sql
 account_id integer primary key auto_increment,
-username varchar(255) not null unique,
-password varchar(255)
+username   varchar(255) not null unique,
+password   varchar(255)
 ```
 
-### Message
+**Message**
+
+```sql
+message_id        integer primary key auto_increment,
+posted_by         integer,
+message_text      varchar(255),
+time_posted_epoch bigint,
+foreign key (posted_by) references account(account_id)
 ```
-message_id integer primary key auto_increment,
-posted_by integer,
-message_text varchar(255),
-time_posted_epoch long,
-foreign key (posted_by) references Account(account_id)
+
+## H2 Console
+
+Available at `http://localhost:8080/h2-console` while the app is running:
+
+- JDBC URL: `jdbc:h2:mem:testdb`
+- Username: `sa`
+- Password: `password`
+
+## Project Structure
+
+```
+src/main/java/com/example/
+├── SocialMediaApp.java        # Spring Boot entry point
+├── controller/                # REST endpoints
+├── service/                   # Business logic and validation
+├── repository/                # Spring Data JPA repositories
+└── entity/                    # Account and Message JPA entities
+src/test/java/com/example/     # HTTP-level integration tests
 ```
 
-# Spring Technical Requirement
+## Changelog
 
-## Project must leverage the Spring Boot Framework
-
-Java classes have been provided, but your entire project MUST leverage the Spring framework.
-In addition to functional test cases, "SpringTest" will verify that you have leveraged the Spring framework, Spring Boot, Spring MVC, and Spring Data.
-SpringTest will verify the following
-
- - That you have, by any means, have a bean for the AccountService, MessageService, AccountRepository, MessageRepository, and SocialMediaController classes
- - That AccountRepository and MessageRepository are working JPARepositories based on their corresponding Account and Message entities
- - That your Spring Boot app leverages MVC by checking for Spring's default error message structure.
- 
-The app will already be a Spring Boot app with a valid application.properties and valid database entities at the start.
-
-# User Stories
-
-## 1: Our API should be able to process new User registrations.
-
-As a user, I should be able to create a new Account on the endpoint POST localhost:8080/register. The body will contain a representation of a JSON Account, but will not contain an account_id.
-
-- The registration will be successful if and only if the username is not blank, the password is at least 4 characters long, and an Account with that username does not already exist. If all these conditions are met, the response body should contain a JSON of the Account, including its account_id. The response status should be 200 OK, which is the default. The new account should be persisted to the database.
-- If the registration is not successful due to a duplicate username, the response status should be 409. (Conflict)
-- If the registration is not successful for some other reason, the response status should be 400. (Client error)
-
-## 2: Our API should be able to process User logins.
-
-As a user, I should be able to verify my login on the endpoint POST localhost:8080/login. The request body will contain a JSON representation of an Account.
-
-- The login will be successful if and only if the username and password provided in the request body JSON match a real account existing on the database. If successful, the response body should contain a JSON of the account in the response body, including its account_id. The response status should be 200 OK, which is the default.
-- If the login is not successful, the response status should be 401. (Unauthorized)
-
-
-## 3: Our API should be able to process the creation of new messages.
-
-As a user, I should be able to submit a new post on the endpoint POST localhost:8080/messages. The request body will contain a JSON representation of a message, which should be persisted to the database, but will not contain a message_id.
-
-- The creation of the message will be successful if and only if the message_text is not blank, is under 255 characters, and posted_by refers to a real, existing user. If successful, the response body should contain a JSON of the message, including its message_id. The response status should be 200, which is the default. The new message should be persisted to the database.
-- If the creation of the message is not successful, the response status should be 400. (Client error)
-
-## 4: Our API should be able to retrieve all messages.
-
-As a user, I should be able to submit a GET request on the endpoint GET localhost:8080/messages.
-
-- The response body should contain a JSON representation of a list containing all messages retrieved from the database. It is expected for the list to simply be empty if there are no messages. The response status should always be 200, which is the default.
-
-## 5: Our API should be able to retrieve a message by its ID.
-
-As a user, I should be able to submit a GET request on the endpoint GET localhost:8080/messages/{message_id}.
-
-- The response body should contain a JSON representation of the message identified by the message_id. It is expected for the response body to simply be empty if there is no such message. The response status should always be 200, which is the default.
-
-## 6: Our API should be able to delete a message identified by a message ID.
-
-As a User, I should be able to submit a DELETE request on the endpoint DELETE localhost:8080/messages/{message_id}.
-
-- The deletion of an existing message should remove an existing message from the database. If the message existed, the response body should contain the number of rows updated (1). The response status should be 200, which is the default.
-- If the message did not exist, the response status should be 200, but the response body should be empty. This is because the DELETE verb is intended to be idempotent, ie, multiple calls to the DELETE endpoint should respond with the same type of response.
-
-## 7: Our API should be able to update a message text identified by a message ID.
-
-As a user, I should be able to submit a PATCH request on the endpoint PATCH localhost:8080/messages. The request body should contain a new message_text values to replace the message identified by message_id. The request body can not be guaranteed to contain any other information.
-
-- The update of a message should be successful if and only if the message id already exists and the new message_text is not blank and is not over 255 characters. If the update is successful, the response body should contain the number of rows updated (1), and the response status should be 200, which is the default. The message existing on the database should have the updated message_text.
-- If the update of the message is not successful for any reason, the response status should be 400. (Client error)
-
-## 8: Our API should be able to retrieve all messages written by a particular user.
-
-As a user, I should be able to submit a GET request on the endpoint GET localhost:8080/accounts/{account_id}/messages.
-
-- The response body should contain a JSON representation of a list containing all messages posted by a particular user, which is retrieved from the database. It is expected for the list to simply be empty if there are no messages. The response status should always be 200, which is the default.
-
-## 9: The Project utilizes the Spring Framework.
-
-- The project was created leveraging the spring framework, including dependency injection, autowire functionality and/or Spring annotations.
-
-# Good luck!
+See [CHANGELOG.md](CHANGELOG.md).
