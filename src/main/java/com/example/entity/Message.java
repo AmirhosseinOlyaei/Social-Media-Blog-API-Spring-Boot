@@ -1,6 +1,6 @@
 package com.example.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * This is a class that models a Message.
